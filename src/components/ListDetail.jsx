@@ -20,15 +20,15 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon, AddIcon } from '@chakra-ui/icons';
-import axiosInstance from '../axiosInstance'; // Import your axios instance
+import axiosInstance from '../axiosInstance'; 
 
 const ListDetail = () => {
-  const { id } = useParams(); // Get list ID from URL
+  const { id } = useParams(); 
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentTodo, setCurrentTodo] = useState(null);
   const [todoTitle, setTodoTitle] = useState('');
-  const [isCompleted, setIsCompleted] = useState(false); // State for completed status
+  const [isCompleted, setIsCompleted] = useState(false); 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
   const toast = useToast();
@@ -116,7 +116,7 @@ const ListDetail = () => {
         );
       } else {
         const newTodo = {
-          id: `t${Date.now()}`, // Unique ID for new todo
+          id: `t${Date.now()}`, 
           title: todoTitle,
           completed: isCompleted,
         };
