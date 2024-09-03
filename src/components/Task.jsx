@@ -22,6 +22,7 @@ import {
 import { EditIcon, ViewIcon, DeleteIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../axiosInstance';
+import Pagination from './Pagination';
 
 const Task = () => {
   const [lists, setLists] = useState([]);
@@ -38,6 +39,9 @@ const Task = () => {
   const iconSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg' });
   const boxPadding = useBreakpointValue({ base: 2, md: 4 });
   const borderSize = useBreakpointValue({ base: '1px', md: '2px' });
+
+  const [currentPage, setCurrentPage] = useState(1); 
+  const itemsPerPage = 4; 
 
   useEffect(() => {
     fetchLists();
@@ -151,6 +155,17 @@ const Task = () => {
     }
   };
 
+  const totalPages = Math.ceil(lists.length / itemsPerPage); 
+
+  const paginatedLists = lists.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  ); 
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
     <Box p={6}>
       <HStack justifyContent="space-between" mb={4}>
@@ -162,13 +177,13 @@ const Task = () => {
         </Button>
       </HStack>
 
-      {lists.length === 0 ? (
+      {paginatedLists.length === 0 ? (
         <VStack>
           <Text fontSize={textSize}>No lists available. Create a new one!</Text>
         </VStack>
       ) : (
         <VStack spacing={4} align="stretch">
-          {lists.map((list) => (
+          {paginatedLists.map((list) => (
             <Box
               key={list.id}
               p={boxPadding}
@@ -206,6 +221,12 @@ const Task = () => {
           ))}
         </VStack>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       {/* Modal for Creating New List */}
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -263,8 +284,8 @@ const Task = () => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="yellow" mr={3} onClick={updateList} size={iconSize}>
-              Save
+            <Button colorScheme="blue" mr={3} onClick={updateList} size={iconSize}>
+              Update
             </Button>
             <Button onClick={onEditClose} size={iconSize}>Cancel</Button>
           </ModalFooter>
@@ -275,6 +296,3 @@ const Task = () => {
 };
 
 export default Task;
-
-
-

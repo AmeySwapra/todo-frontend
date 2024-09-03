@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -19,8 +19,30 @@ import {
   Checkbox,
   useDisclosure,
 } from '@chakra-ui/react';
-import { EditIcon, DeleteIcon, AddIcon } from '@chakra-ui/icons';
+import { EditIcon, DeleteIcon, AddIcon, SmallAddIcon } from '@chakra-ui/icons';
 import axiosInstance from '../axiosInstance'; 
+import Pagination from './Pagination';  
+import ReactToPrint from 'react-to-print';
+
+
+const PrintableContent = React.forwardRef(({ list }, ref) => (
+  <Box ref={ref} p={5}>
+    <Text fontSize="2xl" fontWeight="bold" mb={4}>
+      {list.title}
+    </Text>
+    {list.todos.map((todo) => (
+      <HStack key={todo.id} justifyContent="space-between">
+        <Text
+          as={todo.completed ? 's' : 'span'}
+          fontSize="lg"
+          color={todo.completed ? 'gray.500' : 'black'}
+        >
+          {todo.title}
+        </Text>
+      </HStack>
+    ))}
+  </Box>
+));
 
 const ListDetail = () => {
   const { id } = useParams(); 
@@ -31,7 +53,11 @@ const ListDetail = () => {
   const [isCompleted, setIsCompleted] = useState(false); 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1); 
   const toast = useToast();
+  const componentRef = useRef(); 
+
+  const itemsPerPage = 6; 
 
   useEffect(() => {
     const fetchListDetail = async () => {
@@ -147,6 +173,17 @@ const ListDetail = () => {
     }
   };
 
+  const totalPages = Math.ceil((list?.todos.length || 0) / itemsPerPage);
+
+  const paginatedTodos = list?.todos.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   if (loading) {
     return <Text>Loading...</Text>;
   }
@@ -160,11 +197,30 @@ const ListDetail = () => {
       <Text fontSize="2xl" fontWeight="bold" mb={4}>
         {list.title}
       </Text>
+
+      {/* Print Button */}
+      {list.todos.length > 0 && (
+        <ReactToPrint
+          trigger={() => (
+            <Button
+              colorScheme="teal"
+              position="fixed"
+              top={4}
+              right={4}
+              leftIcon={<SmallAddIcon />}
+            >
+              Print
+            </Button>
+          )}
+          content={() => componentRef.current}
+        />
+      )}
+
       <VStack spacing={4} align="stretch">
-        {list.todos.length === 0 ? (
+        {paginatedTodos.length === 0 ? (
           <Text>No todos are available, please add new ones.</Text>
         ) : (
-          list.todos.map((todo) => (
+          paginatedTodos.map((todo) => (
             <HStack key={todo.id} justifyContent="space-between">
               <Text
                 as={todo.completed ? 's' : 'span'}
@@ -198,6 +254,12 @@ const ListDetail = () => {
         </Button>
       </VStack>
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -224,15 +286,14 @@ const ListDetail = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Printable Content */}
+      <div id="printable" style={{ display: 'none' }}>
+        <PrintableContent list={list} ref={componentRef} />
+      </div>
     </Box>
   );
 };
 
 export default ListDetail;
-
-
-
-
-
-
 
